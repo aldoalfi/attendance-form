@@ -135,13 +135,18 @@
             margin-top: 10px;
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
         .submit-btn:active {
             transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .datetime-display {
@@ -166,15 +171,38 @@
             color: #667eea;
         }
 
-        .success-message {
+        .message {
             display: none;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
             padding: 15px;
             border-radius: 12px;
             text-align: center;
             margin-top: 20px;
             font-weight: 600;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 480px) {
@@ -220,15 +248,22 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">✓ Submit Absensi</button>
+            <button type="submit" class="submit-btn" id="submitBtn">✓ Submit Absensi</button>
         </form>
 
-        <div class="success-message" id="successMessage">
+        <div class="message success-message" id="successMessage">
             ✅ Absensi berhasil dicatat! Terima kasih.
+        </div>
+
+        <div class="message error-message" id="errorMessage">
+            ❌ Gagal mengirim absensi. Silakan coba lagi.
         </div>
     </div>
 
     <script>
+        // Webhook URL n8n
+        const WEBHOOK_URL = 'https://aldoalfi.app.n8n.cloud/webhook-test/3ac09875-ca83-486a-84ef-61f9826fea1f';
+
         // Update waktu real-time
         function updateDateTime() {
             const now = new Date();
@@ -262,32 +297,102 @@
             });
         });
 
+        // Function untuk kirim data ke n8n webhook
+        async function sendToWebhook(data) {
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return { success: true, data: result };
+            } catch (error) {
+                console.error('Webhook error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Function untuk show/hide messages
+        function showMessage(type, duration = 5000) {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => msg.style.display = 'none');
+            
+            const targetMessage = document.getElementById(type + 'Message');
+            if (targetMessage) {
+                targetMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    targetMessage.style.display = 'none';
+                }, duration);
+            }
+        }
+
         // Handle form submission
-        document.getElementById('absensiForm').addEventListener('submit', function(e) {
+        document.getElementById('absensiForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const nama = document.getElementById('nama').value;
-            const divisi = document.querySelector('input[name="divisi"]:checked').value;
-            const waktu = new Date().toLocaleString('id-ID');
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
             
-            // Simulasi penyimpanan data (dalam aplikasi nyata, kirim ke server)
-            console.log('Data Absensi:', {
+            // Show loading state
+            submitBtn.innerHTML = '<span class="loading-spinner"></span>Mengirim...';
+            submitBtn.disabled = true;
+            
+            // Ambil data form
+            const nama = document.getElementById('nama').value.trim();
+            const divisi = document.querySelector('input[name="divisi"]:checked')?.value;
+            const waktu = new Date();
+            
+            // Siapkan data untuk dikirim
+            const attendanceData = {
                 nama: nama,
                 divisi: divisi,
-                waktu: waktu
-            });
+                waktu: waktu.toLocaleString('id-ID'),
+                timestamp: waktu.toISOString(),
+                tanggal: waktu.toLocaleDateString('id-ID'),
+                jam: waktu.toLocaleTimeString('id-ID'),
+                form_source: 'attendance_form',
+                submitted_at: new Date().toISOString()
+            };
+
+            console.log('Sending data:', attendanceData);
             
-            // Tampilkan pesan sukses
-            document.getElementById('successMessage').style.display = 'block';
-            
-            // Reset form setelah 3 detik
-            setTimeout(() => {
-                this.reset();
-                document.getElementById('successMessage').style.display = 'none';
-                radioOptions.forEach(option => {
-                    option.classList.remove('selected');
-                });
-            }, 3000);
+            try {
+                // Kirim ke webhook
+                const result = await sendToWebhook(attendanceData);
+                
+                if (result.success) {
+                    console.log('Webhook response:', result.data);
+                    showMessage('success');
+                    
+                    // Reset form setelah berhasil
+                    setTimeout(() => {
+                        this.reset();
+                        radioOptions.forEach(option => {
+                            option.classList.remove('selected');
+                        });
+                    }, 2000);
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                console.error('Submit error:', error);
+                showMessage('error');
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         });
 
         // Animasi hover untuk radio options
@@ -297,6 +402,18 @@
                 radio.checked = true;
                 radio.dispatchEvent(new Event('change'));
             });
+        });
+
+        // Test webhook connection on page load (optional)
+        window.addEventListener('load', async function() {
+            console.log('Testing webhook connection...');
+            try {
+                const testData = { test: true, timestamp: new Date().toISOString() };
+                const result = await sendToWebhook(testData);
+                console.log('Webhook test result:', result);
+            } catch (error) {
+                console.log('Webhook test failed:', error);
+            }
         });
     </script>
 </body>
