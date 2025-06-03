@@ -262,7 +262,7 @@
 
     <script>
         // Webhook URL n8n
-        const WEBHOOK_URL = 'https://aldoalfi.app.n8n.cloud/webhook-test/3ac09875-ca83-486a-84ef-61f9826fea1f';
+        const WEBHOOK_URL = 'https://sazxtravel.app.n8n.cloud/webhook/e11fdbc1-b264-448e-b1ec-d8867d3a80c6';
 
         // Update waktu real-time
         function updateDateTime() {
@@ -300,79 +300,25 @@
         // Function untuk kirim data ke n8n webhook
         async function sendToWebhook(data) {
             try {
-                // Method 1: Direct fetch dengan mode no-cors (fallback)
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Bypass CORS untuk simple requests
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(data)
                 });
 
-                // Karena no-cors, kita tidak bisa membaca response
-                // Tapi jika tidak ada error, berarti terkirim
-                return { success: true, data: 'Data sent successfully' };
-                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return { success: true, data: result };
             } catch (error) {
                 console.error('Webhook error:', error);
-                
-                // Method 2: Fallback menggunakan form data
-                try {
-                    console.log('Trying fallback method with form data...');
-                    return await sendViaFormData(data);
-                } catch (fallbackError) {
-                    console.error('Fallback error:', fallbackError);
-                    return { success: false, error: error.message };
-                }
+                return { success: false, error: error.message };
             }
-        }
-
-        // Alternative method menggunakan FormData
-        async function sendViaFormData(data) {
-            const formData = new FormData();
-            
-            // Convert object to form data
-            Object.keys(data).forEach(key => {
-                formData.append(key, data[key]);
-            });
-
-            const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: formData
-            });
-
-            return { success: true, data: 'Data sent via form data' };
-        }
-
-        // Method 3: Using hidden iframe (jika method lain gagal)
-        function sendViaIframe(data) {
-            return new Promise((resolve) => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-
-                const form = iframe.contentDocument.createElement('form');
-                form.method = 'POST';
-                form.action = WEBHOOK_URL;
-
-                Object.keys(data).forEach(key => {
-                    const input = iframe.contentDocument.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = data[key];
-                    form.appendChild(input);
-                });
-
-                iframe.contentDocument.body.appendChild(form);
-                form.submit();
-
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    resolve({ success: true, data: 'Data sent via iframe' });
-                }, 2000);
-            });
         }
 
         // Function untuk show/hide messages
@@ -436,20 +382,7 @@
                         });
                     }, 2000);
                 } else {
-                    // Coba method alternatif jika gagal
-                    console.log('Trying alternative method...');
-                    const altResult = await sendViaIframe(attendanceData);
-                    if (altResult.success) {
-                        showMessage('success');
-                        setTimeout(() => {
-                            this.reset();
-                            radioOptions.forEach(option => {
-                                option.classList.remove('selected');
-                            });
-                        }, 2000);
-                    } else {
-                        throw new Error('All methods failed');
-                    }
+                    throw new Error(result.error);
                 }
                 
             } catch (error) {
@@ -472,16 +405,16 @@
         });
 
         // Test webhook connection on page load (optional)
-        window.addEventListener('load', async function() {
-            console.log('Testing webhook connection...');
-            try {
-                const testData = { test: true, timestamp: new Date().toISOString() };
-                const result = await sendToWebhook(testData);
-                console.log('Webhook test result:', result);
-            } catch (error) {
-                console.log('Webhook test failed:', error);
-            }
-        });
+        // window.addEventListener('load', async function() {
+        //     console.log('Testing webhook connection...');
+        //     try {
+        //         const testData = { test: true, timestamp: new Date().toISOString() };
+        //         const result = await sendToWebhook(testData);
+        //         console.log('Webhook test result:', result);
+        //     } catch (error) {
+        //         console.log('Webhook test failed:', error);
+        //     }
+        // });
     </script>
 </body>
 </html>
