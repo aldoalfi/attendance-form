@@ -290,6 +290,7 @@
             color: #718096;
             font-size: 16px;
             margin-bottom: 30px;
+            line-height: 1.6;
         }
 
         .success-container {
@@ -356,6 +357,28 @@
         .hidden {
             display: none;
         }
+
+        .completion-time {
+            background: #f0f4ff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .completion-time .label {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .completion-time .time-value {
+            color: #2d3748;
+            font-size: 18px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -415,6 +438,7 @@
 
             <button id="continueBtn" class="continue-btn">Lanjut ke Kuis</button>
         </div>
+        
         <div id="quizContainer" class="quiz-container">
             <div class="header">
                 <div class="icon">📝</div>
@@ -440,13 +464,17 @@
                 <h1 class="title">Hasil Kuis</h1>
             </div>
 
+            <div class="completion-time">
+                <div class="label">Waktu Selesai Kuis</div>
+                <div class="time-value" id="completionTime"></div>
+            </div>
+
             <div id="scoreCircle" class="score-circle">
                 <span id="scoreText"></span>
             </div>
 
             <div id="resultStatus" class="result-text"></div>
             <div id="resultDetails" class="result-details"></div>
-        </div>
         </div>
     </div>
 
@@ -513,6 +541,7 @@
         let userDivision = '';
         let attendanceTime = '';
         let attendanceDate = '';
+        let quizCompletionTime = '';
         
         // Ganti dengan URL Apps Script Web App Kamu
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkAgUcM9NT05XuBSybtSRSx5S0VgO-nVX7shxrjHxz3IE7ML5cCmjA0xWmDQ_UlwLB/exec';
@@ -660,8 +689,14 @@
         }
 
         function showResult() {
+            // Capture quiz completion time
+            quizCompletionTime = new Date().toLocaleString('id-ID');
+            
             document.getElementById('quizContainer').style.display = 'none';
             document.getElementById('resultContainer').style.display = 'block';
+            
+            // Display completion time
+            document.getElementById('completionTime').textContent = quizCompletionTime;
             
             const scoreCircle = document.getElementById('scoreCircle');
             const scoreText = document.getElementById('scoreText');
@@ -674,12 +709,12 @@
                 scoreCircle.className = 'score-circle pass';
                 resultStatus.textContent = '🎉 Selamat! Kamu LULUS';
                 resultStatus.style.color = '#48bb78';
-                resultDetails.textContent = `${userName}, Kamu berhasil menjawab ${score} dari 5 soal dengan benar!`;
+                resultDetails.innerHTML = `${userName}, Kamu berhasil menjawab ${score} dari 5 soal dengan benar!<br><strong>Waktu Penyelesaian:</strong> ${quizCompletionTime}`;
             } else {
                 scoreCircle.className = 'score-circle fail';
                 resultStatus.textContent = '😔 Maaf, Kamu TIDAK LULUS';
                 resultStatus.style.color = '#f56565';
-                resultDetails.textContent = `${userName}, Kamu hanya menjawab ${score} dari 5 soal dengan benar. Minimal 3 jawaban benar untuk lulus.`;
+                resultDetails.innerHTML = `${userName}, Kamu hanya menjawab ${score} dari 5 soal dengan benar. Minimal 3 jawaban benar untuk lulus.<br><strong>Waktu Penyelesaian:</strong> ${quizCompletionTime}`;
             }
             
             // Kirim data quiz ke Apps Script
@@ -693,6 +728,7 @@
                     division: userDivision,
                     date: attendanceDate,
                     time: attendanceTime,
+                    quizCompletionTime: quizCompletionTime,
                     quizData: {
                         answers: selectedAnswers,
                         score: score
