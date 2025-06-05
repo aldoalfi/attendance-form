@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Absensi Karyawan</title>
+    <title>Form Absensi & Kuis</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -22,14 +22,24 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 450px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .header {
@@ -37,45 +47,78 @@
             margin-bottom: 30px;
         }
 
-        .header h1 {
-            color: #333;
+        .icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 12px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .title {
             font-size: 28px;
             font-weight: 700;
+            color: #2d3748;
             margin-bottom: 8px;
         }
 
-        .header p {
-            color: #666;
-            font-size: 14px;
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .date-time-box {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .date {
+            color: #4a5568;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .time {
+            color: #667eea;
+            font-size: 32px;
+            font-weight: 700;
         }
 
         .form-group {
             margin-bottom: 25px;
         }
 
-        label {
+        .form-label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
             font-weight: 600;
-            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 16px;
         }
 
-        input[type="text"] {
+        .form-input {
             width: 100%;
             padding: 15px;
-            border: 2px solid #e1e5e9;
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-size: 16px;
             transition: all 0.3s ease;
-            background: #fff;
+            background: #f7fafc;
         }
 
-        input[type="text"]:focus {
+        .form-input:focus {
             outline: none;
             border-color: #667eea;
+            background: white;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
         }
 
         .radio-group {
@@ -88,17 +131,21 @@
             display: flex;
             align-items: center;
             padding: 15px;
-            border: 2px solid #e1e5e9;
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #fff;
+            background: #f7fafc;
         }
 
         .radio-option:hover {
+            border-color: #cbd5e0;
+            background: white;
+        }
+
+        .radio-option.selected {
             border-color: #667eea;
-            background: #f8f9ff;
-            transform: translateY(-2px);
+            background: #f0f4ff;
         }
 
         .radio-option input[type="radio"] {
@@ -109,33 +156,27 @@
         }
 
         .radio-option label {
-            margin: 0;
+            font-size: 16px;
+            color: #2d3748;
             cursor: pointer;
-            font-weight: 500;
             flex: 1;
-        }
-
-        .radio-option.selected {
-            border-color: #667eea;
-            background: #f8f9ff;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 16px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
+            padding: 18px;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
         }
 
-        .submit-btn:hover:not(:disabled) {
+        .submit-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
@@ -144,277 +185,534 @@
             transform: translateY(0);
         }
 
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .quiz-container {
+            display: none;
         }
 
-        .datetime-display {
+        .question-counter {
             text-align: center;
-            margin-bottom: 25px;
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 12px;
-            border: 1px solid #e1e5e9;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 18px;
         }
 
-        .datetime-display .date {
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+
+        .option:hover {
+            border-color: #cbd5e0;
+            background: white;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .quiz-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .datetime-display .time {
+        .quiz-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .quiz-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            display: none;
+            text-align: center;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .pass {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .fail {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        .result-text {
             font-size: 24px;
             font-weight: 700;
-            color: #667eea;
+            margin-bottom: 10px;
         }
 
-        .message {
+        .result-details {
+            color: #718096;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .success-container {
             display: none;
-            padding: 15px;
-            border-radius: 12px;
             text-align: center;
-            margin-top: 20px;
-            font-weight: 600;
         }
 
-        .success-message {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .error-message {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
-            color: white;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
             border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            animation: bounce 0.6s ease-out;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
 
-        @media (max-width: 480px) {
-            .container {
-                padding: 30px 20px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
+        .success-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #48bb78;
+            margin-bottom: 10px;
+        }
+
+        .success-details {
+            color: #718096;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .continue-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📋 Form Absensi</h1>
-            <p>Silakan isi data absensi Anda</p>
-        </div>
-
-        <div class="datetime-display">
-            <div class="date" id="currentDate"></div>
-            <div class="time" id="currentTime"></div>
-        </div>
-
-        <form id="absensiForm">
-            <div class="form-group">
-                <label for="nama">Nama Lengkap</label>
-                <input type="text" id="nama" name="nama" required placeholder="Masukkan nama lengkap Anda">
+        <!-- Form Absensi -->
+        <div id="attendanceForm">
+            <div class="header">
+                <div class="icon">📋</div>
+                <h1 class="title">Form Absensi</h1>
+                <p class="subtitle">Silakan isi data absensi Kamu</p>
             </div>
 
-            <div class="form-group">
-                <label>Divisi</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="cro" name="divisi" value="CRO" required>
-                        <label for="cro">Customer Relationship Officer (CRO)</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="cc" name="divisi" value="CC" required>
-                        <label for="cc">Call Center (CC)</label>
+            <div class="date-time-box">
+                <div class="date" id="currentDate"></div>
+                <div class="time" id="currentTime"></div>
+            </div>
+
+            <form id="attendance">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-input" id="fullName" placeholder="Masukkan nama lengkap Kamu" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Divisi</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="cro" name="division" value="Customer Relationship Officer (CRO)" required>
+                            <label for="cro">Customer Relationship Officer (CRO)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="cc" name="division" value="Call Center (CC)" required>
+                            <label for="cc">Call Center (CC)</label>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn">✓ Submit Absensi</button>
-        </form>
-
-        <div class="message success-message" id="successMessage">
-            ✅ Absensi berhasil dicatat! Terima kasih.
+                <button type="submit" class="submit-btn">
+                    ✓ Submit Absensi
+                </button>
+            </form>
         </div>
 
-        <div class="message error-message" id="errorMessage">
-            ❌ Gagal mengirim absensi. Silakan coba lagi.
+        <!-- Success Container -->
+        <div id="successContainer" class="success-container">
+            <div class="header">
+                <div class="success-icon">✅</div>
+                <h1 class="title">Absensi Berhasil</h1>
+            </div>
+
+            <div class="success-text">Terima kasih!</div>
+            <div class="success-details">
+                <span id="successName"></span>, absensi Kamu telah berhasil dicatat.<br>
+                Divisi: <span id="successDivision"></span><br>
+                Waktu: <span id="successTime"></span>
+            </div>
+
+            <button id="continueBtn" class="continue-btn">Lanjut ke Kuis</button>
+        </div>
+        <div id="quizContainer" class="quiz-container">
+            <div class="header">
+                <div class="icon">📝</div>
+                <h1 class="title">Kuis CRO</h1>
+                <p class="subtitle">Jawab pertanyaan berikut dengan benar</p>
+            </div>
+
+            <div class="question-counter">
+                <span id="questionNumber">1</span> dari 5
+            </div>
+
+            <div class="question" id="questionText"></div>
+
+            <div class="options" id="optionsContainer"></div>
+
+            <button id="nextBtn" class="quiz-btn" disabled>Selanjutnya</button>
+        </div>
+
+        <!-- Result Container -->
+        <div id="resultContainer" class="result-container">
+            <div class="header">
+                <div class="icon">🎯</div>
+                <h1 class="title">Hasil Kuis</h1>
+            </div>
+
+            <div id="scoreCircle" class="score-circle">
+                <span id="scoreText"></span>
+            </div>
+
+            <div id="resultStatus" class="result-text"></div>
+            <div id="resultDetails" class="result-details"></div>
+        </div>
         </div>
     </div>
 
     <script>
-        // Webhook URL n8n
-        const WEBHOOK_URL = 'https://sazxtravel.app.n8n.cloud/webhook/e11fdbc1-b264-448e-b1ec-d8867d3a80c6';
+        // Quiz questions data
+        const questions = [
+            {
+                question: "Apa tugas utama dari seorang Customer Relation Officer?",
+                options: [
+                    "Menjual produk secara langsung",
+                    "Menjadi penghubung antara pelanggan dan perusahaan",
+                    "Menyusun laporan keuangan",
+                    "Membuat iklan produk"
+                ],
+                correct: 1
+            },
+            {
+                question: "Mengapa penting membuat agenda harian dalam pekerjaan CRO?",
+                options: [
+                    "Supaya terlihat sibuk",
+                    "Untuk menghindari atasan",
+                    "Agar tugas-tugas bisa dikerjakan secara teratur dan tidak terlewat",
+                    "Untuk mengisi waktu luang"
+                ],
+                correct: 2
+            },
+            {
+                question: "Jika ada pekerjaan yang mendesak dan penting, sebaiknya:",
+                options: [
+                    "Dikerjakan terakhir setelah tugas ringan",
+                    "Didelegasikan ke orang lain",
+                    "Diabaikan agar tidak stres",
+                    "Diprioritaskan terlebih dahulu"
+                ],
+                correct: 3
+            },
+            {
+                question: "Apa manfaat utama dari evaluasi pekerjaan harian bagi CRO?",
+                options: [
+                    "Menambah beban kerja",
+                    "Memberi waktu untuk bersantai",
+                    "Mengecek tugas yang belum selesai dan memperbaiki alur kerja",
+                    "Menghindari tanggung jawab"
+                ],
+                correct: 2
+            },
+            {
+                question: "Apa pentingnya komunikasi yang efektif dalam pekerjaan CRO?",
+                options: [
+                    "Menghindari interaksi dengan pelanggan",
+                    "Mempermudah proses follow-up dan meminimalkan kesalahpahaman",
+                    "Membuat pelanggan merasa takut",
+                    "Menghindari tanggung jawab atas keluhan"
+                ],
+                correct: 1
+            }
+        ];
 
-        // Update waktu real-time
+        // Global variables
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let userName = '';
+        let userDivision = '';
+        let attendanceTime = '';
+        let attendanceDate = '';
+        
+        // Ganti dengan URL Apps Script Web App Kamu
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkAgUcM9NT05XuBSybtSRSx5S0VgO-nVX7shxrjHxz3IE7ML5cCmjA0xWmDQ_UlwLB/exec';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Add event listeners
+            document.getElementById('attendance').addEventListener('submit', handleAttendanceSubmit);
+            document.getElementById('continueBtn').addEventListener('click', startQuiz);
+            document.getElementById('nextBtn').addEventListener('click', handleNextQuestion);
+            
+            // Radio button selection styling
+            const radioOptions = document.querySelectorAll('.radio-option');
+            radioOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    radioOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+        });
+
         function updateDateTime() {
             const now = new Date();
             const options = { 
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
-                day: 'numeric' 
+                day: 'numeric'
             };
-            const dateString = now.toLocaleDateString('id-ID', options);
-            const timeString = now.toLocaleTimeString('id-ID');
             
-            document.getElementById('currentDate').textContent = dateString;
-            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('id-ID', options);
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
         }
 
-        // Update setiap detik
-        updateDateTime();
-        setInterval(updateDateTime, 1000);
+        function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            
+            userName = document.getElementById('fullName').value;
+            userDivision = document.querySelector('input[name="division"]:checked').value;
+            attendanceDate = document.getElementById('currentDate').textContent;
+            attendanceTime = document.getElementById('currentTime').textContent;
+            
+            // Kirim data absensi ke Apps Script
+            sendAttendanceData();
+            
+            // Show success message
+            document.getElementById('attendanceForm').style.display = 'none';
+            document.getElementById('successContainer').style.display = 'block';
+            
+            // Fill success details
+            document.getElementById('successName').textContent = userName;
+            document.getElementById('successDivision').textContent = userDivision;
+            document.getElementById('successTime').textContent = new Date().toLocaleString('id-ID');
+        }
 
-        // Efek visual untuk radio button
-        const radioOptions = document.querySelectorAll('.radio-option');
-        const radioInputs = document.querySelectorAll('input[type="radio"]');
-
-        radioInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                radioOptions.forEach(option => {
-                    option.classList.remove('selected');
-                });
-                this.closest('.radio-option').classList.add('selected');
-            });
-        });
-
-        // Function untuk kirim data ke n8n webhook
-        async function sendToWebhook(data) {
+        async function sendAttendanceData() {
             try {
-                const response = await fetch(WEBHOOK_URL, {
+                const data = {
+                    name: userName,
+                    division: userDivision,
+                    date: attendanceDate,
+                    time: attendanceTime
+                };
+
+                const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(data)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const result = await response.json();
+                console.log('Absensi berhasil disimpan:', result);
+            } catch (error) {
+                console.error('Error mengirim data absensi:', error);
+            }
+        }
+
+        function startQuiz() {
+            // Hide success container and show quiz
+            document.getElementById('successContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            
+            // Start quiz
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            
+            document.getElementById('questionNumber').textContent = currentQuestion + 1;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.addEventListener('click', () => selectOption(index, optionDiv));
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // Reset next button
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function selectOption(index, element) {
+            // Remove previous selections
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selection to clicked option
+            element.classList.add('selected');
+            
+            // Store selected answer
+            selectedAnswers[currentQuestion] = index;
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function handleNextQuestion() {
+            // Check if answer is correct
+            if (selectedAnswers[currentQuestion] === questions[currentQuestion].correct) {
+                score++;
+            }
+            
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreText = document.getElementById('scoreText');
+            const resultStatus = document.getElementById('resultStatus');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            scoreText.textContent = `${score}/5`;
+            
+            if (score >= 3) {
+                scoreCircle.className = 'score-circle pass';
+                resultStatus.textContent = '🎉 Selamat! Kamu LULUS';
+                resultStatus.style.color = '#48bb78';
+                resultDetails.textContent = `${userName}, Kamu berhasil menjawab ${score} dari 5 soal dengan benar!`;
+            } else {
+                scoreCircle.className = 'score-circle fail';
+                resultStatus.textContent = '😔 Maaf, Kamu TIDAK LULUS';
+                resultStatus.style.color = '#f56565';
+                resultDetails.textContent = `${userName}, Kamu hanya menjawab ${score} dari 5 soal dengan benar. Minimal 3 jawaban benar untuk lulus.`;
+            }
+            
+            // Kirim data quiz ke Apps Script
+            sendQuizData();
+        }
+
+        async function sendQuizData() {
+            try {
+                const data = {
+                    name: userName,
+                    division: userDivision,
+                    date: attendanceDate,
+                    time: attendanceTime,
+                    quizData: {
+                        answers: selectedAnswers,
+                        score: score
+                    }
+                };
+
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
 
                 const result = await response.json();
-                return { success: true, data: result };
+                console.log('Data quiz berhasil disimpan:', result);
             } catch (error) {
-                console.error('Webhook error:', error);
-                return { success: false, error: error.message };
+                console.error('Error mengirim data quiz:', error);
             }
         }
-
-        // Function untuk show/hide messages
-        function showMessage(type, duration = 5000) {
-            const messages = document.querySelectorAll('.message');
-            messages.forEach(msg => msg.style.display = 'none');
-            
-            const targetMessage = document.getElementById(type + 'Message');
-            if (targetMessage) {
-                targetMessage.style.display = 'block';
-                
-                setTimeout(() => {
-                    targetMessage.style.display = 'none';
-                }, duration);
-            }
-        }
-
-        // Handle form submission
-        document.getElementById('absensiForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.innerHTML;
-            
-            // Show loading state
-            submitBtn.innerHTML = '<span class="loading-spinner"></span>Mengirim...';
-            submitBtn.disabled = true;
-            
-            // Ambil data form
-            const nama = document.getElementById('nama').value.trim();
-            const divisi = document.querySelector('input[name="divisi"]:checked')?.value;
-            const waktu = new Date();
-            
-            // Siapkan data untuk dikirim
-            const attendanceData = {
-                nama: nama,
-                divisi: divisi,
-                waktu: waktu.toLocaleString('id-ID'),
-                timestamp: waktu.toISOString(),
-                tanggal: waktu.toLocaleDateString('id-ID'),
-                jam: waktu.toLocaleTimeString('id-ID'),
-                form_source: 'attendance_form',
-                submitted_at: new Date().toISOString()
-            };
-
-            console.log('Sending data:', attendanceData);
-            
-            try {
-                // Kirim ke webhook
-                const result = await sendToWebhook(attendanceData);
-                
-                if (result.success) {
-                    console.log('Webhook response:', result.data);
-                    showMessage('success');
-                    
-                    // Reset form setelah berhasil
-                    setTimeout(() => {
-                        this.reset();
-                        radioOptions.forEach(option => {
-                            option.classList.remove('selected');
-                        });
-                    }, 2000);
-                } else {
-                    throw new Error(result.error);
-                }
-                
-            } catch (error) {
-                console.error('Submit error:', error);
-                showMessage('error');
-            } finally {
-                // Reset button
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-
-        // Animasi hover untuk radio options
-        radioOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const radio = this.querySelector('input[type="radio"]');
-                radio.checked = true;
-                radio.dispatchEvent(new Event('change'));
-            });
-        });
-
-        // Test webhook connection on page load (optional)
-        // window.addEventListener('load', async function() {
-        //     console.log('Testing webhook connection...');
-        //     try {
-        //         const testData = { test: true, timestamp: new Date().toISOString() };
-        //         const result = await sendToWebhook(testData);
-        //         console.log('Webhook test result:', result);
-        //     } catch (error) {
-        //         console.log('Webhook test failed:', error);
-        //     }
-        // });
     </script>
 </body>
 </html>
